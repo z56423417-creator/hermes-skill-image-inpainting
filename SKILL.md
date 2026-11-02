@@ -68,6 +68,8 @@ final = img.copy(); final[mask > 0] = out[mask > 0]
 ## 坑
 
 - **`cv2.imwrite` 在中文/非 ASCII 路径下会静默失败**（写不出文件，`os.path.getsize` 才报错）：一律走 `ok,buf=cv2.imencode('.jpg',img,[cv2.IMWRITE_JPEG_QUALITY,96]); open(p,'wb').write(buf.tobytes())`，并 `os.makedirs(..., exist_ok=True)`；写完读回校验 shape 再交付。
+- **打印含中文的产出路径会炸在控制台编码上**（Windows cp1252 / CI runner）：脚本头部加 `sys.stdout.reconfigure(errors='replace')`；向上层管道（测试、subprocess）传输出时再额外 `encoding='utf-8'` + `PYTHONIOENCODING=utf-8`。这是「代码没问题但进程非零退出」的典型假故障。
+- **`cv2.putText` 只吃 8 位图**：拿 float32 画布写字会 `Assertion failed: img.depth() == CV_8U`。做测试图时先 `astype(np.uint8)` 再画。
 - 顶帽只对**亮于背景的细结构**有效。要抹深色/彩色物体，用外部掩膜（SAM 或其它分割结果）喂进来，别硬调阈值。
 - ROI 压到白色物体（衬衫、桌布）时掩膜会覆盖它的一部分，正常——LaMa 会用周围同类纹理补回；但 ROI 别越过物体边界太远，否则边界会被「抹平」。
 - 不要把整图 resize 变小后再 inpaint：笔画糊成一片，还原回去鬼影更大。全分辨率做。
