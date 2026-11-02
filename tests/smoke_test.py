@@ -64,8 +64,12 @@ def make_test_image(path):
 
 
 def run(args, expect_code=0):
+    # Child prints non-ASCII paths; force UTF-8 both ways so a cp1252 Windows
+    # runner doesn't die in the console encoder instead of testing the code.
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
     p = subprocess.run([sys.executable, SCRIPT] + [str(a) for a in args],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", env=env)
     if p.returncode != expect_code:
         print(p.stdout)
         print(p.stderr)

@@ -21,6 +21,13 @@ import sys
 import cv2
 import numpy as np
 
+# Print artifact paths without dying on a console that can't encode them
+# (cp1252 Windows runners, redirects). Keeps the local codepage for CJK.
+try:
+    sys.stdout.reconfigure(errors='replace')
+except Exception:
+    pass
+
 
 def imwrite_u(path, img, jpeg_quality=None):
     """Unicode-safe write: cv2.imwrite fails silently on non-ASCII paths on Windows."""
