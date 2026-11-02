@@ -28,6 +28,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ROOT, "scripts", "remove_watermark.py")
 TEXT = "DEMO 12345"
 
+# CI runners use a cp1252 console; this test prints CJK paths on purpose.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 
 def fail(msg):
     print("FAIL: %s" % msg)
