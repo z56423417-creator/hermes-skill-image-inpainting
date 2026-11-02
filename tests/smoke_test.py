@@ -46,6 +46,7 @@ def make_test_image(path):
     img = np.dstack([base, base * 0.99, base * 0.93]).astype(np.float32)
     img[:, 430:] = np.array([46.0, 39.0, 31.0], np.float32)  # navy panel
     img = cv2.GaussianBlur(img, (0, 0), 3)
+    img = np.clip(img, 0, 255).astype(np.uint8)   # putText requires 8-bit canvas
 
     font, scale, thick = cv2.FONT_HERSHEY_SIMPLEX, 1.9, 4
     (tw, th), bl = cv2.getTextSize(TEXT, font, scale, thick)
