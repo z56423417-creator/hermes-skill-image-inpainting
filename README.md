@@ -1,5 +1,7 @@
 # image-inpainting · 照片局部重绘去水印
 
+[![CI](https://github.com/z56423417-creator/hermes-skill-image-inpainting/actions/workflows/ci.yml/badge.svg)](https://github.com/z56423417-creator/hermes-skill-image-inpainting/actions/workflows/ci.yml)
+
 一个用于 [Hermes Agent](https://hermes-agent.nousresearch.com/docs) 的 skill：给一张图 + 一个矩形框，把框里的水印 / 贴纸 / 文字 / 小物体**重绘抹掉**，像素级看不出痕迹（不是打码、不是模糊、不是裁切）。
 
 核心：**白顶帽建掩膜 → LaMa 重绘 → 只把掩膜内的像素贴回原图**。掩膜外逐像素保留原图，不引入全图重编码损失，也方便交代「只动了这一块」。
@@ -80,6 +82,25 @@ python scripts/remove_watermark.py in.jpg 0 0 400 80 out --method cv2
 - 掩膜是矩形 ROI + 自动检测，**不支持交互式涂画**；形状复杂的目标请自己给 `--mask`。
 - LaMa 是通用 inpainter，不保证还原真实结构（比如水印压在人脸上，会补出「合理但虚构」的皮肤）。
 - 大 ROI（几百 px 见方）在 CPU 上会明显变慢，且更容易糊。
+
+## 测试
+
+CI（GitHub Actions，Ubuntu × py3.11/3.12 + Windows × py3.11 三档）跑 `tests/smoke_test.py`，覆盖：
+
+| 检查 | 断言 |
+| --- | --- |
+| 产出 | 5 个文件齐全且非空 |
+| 掩膜 | 合成水印笔画覆盖率 ≥ 97% |
+| **核心承诺** | 掩膜外像素与输入**逐字节相同** |
+| 效果 | ROI 内亮像素比例降到 0.2% 以下 |
+| Unicode 路径 | 输出到中文目录不丢文件 |
+| 外部掩膜 | `--mask` 逐像素照用，掩膜外不变 |
+| 空掩膜 | 以非零码退出并给出可操作报错 |
+| SKILL.md | frontmatter 的 name / description(≤60 字) / license 有效 |
+
+本地跑：`pip install opencv-python-headless numpy && python tests/smoke_test.py`
+
+LaMa 路径不进 CI（196 MB 权重 + CPU 约 2 分钟），需要时手动跑一次真图。
 
 ## 合规提示
 

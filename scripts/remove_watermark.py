@@ -104,6 +104,8 @@ def main():
     mask[y0:y1, x0:x1] = mroi
     npx = int((mask > 0).sum())
     if npx == 0:
+        if a.mask:
+            sys.exit('empty mask: --mask PNG has no white pixels inside ROI (%d,%d,%d,%d)' % (x0, y0, x1, y1))
         sys.exit('empty mask: lower --thresh, raise --ksize, or pass --mask')
     print('mask px=%d' % npx)
 
